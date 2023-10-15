@@ -2,6 +2,8 @@
 import tabula
 from pptx import Presentation
 from pdf2image import convert_from_path
+import PyPDF2
+import openpyxl
 
 
 def pdf_to_docx(pdf_file, output_file, page=None, start_page=0, end_page=None):
@@ -13,17 +15,33 @@ def pdf_to_docx(pdf_file, output_file, page=None, start_page=0, end_page=None):
     cv.close()
 
 
-def pdf_to_xlsx(pdf_file, xlsx_file, page):
-    tabula.convert_into(pdf_file, xlsx_file, output_format="xlsx", pages=page)
+def pdf_to_xlsx(pdf_file, xlsx_file, page="all"):
+    xlsx_file += ".xlsx"
+    print(xlsx_file)
+    pdf_file = open(pdf_file, 'rb')
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
 
+    excel_workbook = openpyxl.Workbook()
+    excel_sheet = excel_workbook.active
+
+    for page_num in range(len(pdf_reader.pages)):
+        page = pdf_reader.pages[page_num]
+        page_text = page.extract_text()
+        page_lines = page_text.split('\n')
+
+        for row_num, line in enumerate(page_lines, start=1):
+            columns = line.split('\t')
+            for col_num, cell in enumerate(columns, start=1):
+                excel_sheet.cell(row=row_num, column=col_num, value=cell)
+
+    excel_workbook.save(xlsx_file)
+    print(f'PDF успешно сконвертирован в Excel: {xlsx_file}')
+
+    pdf_file.close()
+  
 
 def pdf_to_pptx(pdf_file, pptx_file, page):
-    prs = Presentation()
-    slide = prs.slides.add_slide(prs.slide_layouts[5])
-    title = slide.shapes.title
-    content = slide.placeholders[1]
-    content.text = tabula.read_pdf(pdf_file, pages=page).values[0][0]
-    prs.save(pptx_file)
+    pass
 
 
 def pdf_to_images(pdf_file, image_dir, start_page, end_page):
@@ -35,6 +53,8 @@ def pdf_to_images(pdf_file, image_dir, start_page, end_page):
 def convert_file(pdf_file, output_file, choice_type, page, start_page, end_page, doc_type):
     if choice_type == "1":
         pdf_to_docx(pdf_file, output_file + "." + doc_type, page, start_page, end_page)
+    elif choice_type == "2":
+        pdf_to_xlsx(pdf_file, output_file, page)
              
 
 def main():
@@ -46,6 +66,7 @@ def main():
     start_page = None
     end_page = None
     page = None
+    doc_type = None
     
     if number_of_pages == "1":
         start_page = str(int(input("Start: ")) - 1)
