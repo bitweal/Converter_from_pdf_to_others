@@ -2,8 +2,8 @@
 import tabula
 from pptx import Presentation
 from pdf2image import convert_from_path
-import PyPDF2
-import openpyxl
+import pdfplumber
+import pandas as pd
 
 
 def pdf_to_docx(pdf_file, output_file, page=None, start_page=0, end_page=None):
@@ -17,28 +17,21 @@ def pdf_to_docx(pdf_file, output_file, page=None, start_page=0, end_page=None):
 
 def pdf_to_xlsx(pdf_file, xlsx_file, page="all"):
     xlsx_file += ".xlsx"
-    print(xlsx_file)
-    pdf_file = open(pdf_file, 'rb')
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    pdf = pdfplumber.open(pdf_file)
+    excel_data = []
 
-    excel_workbook = openpyxl.Workbook()
-    excel_sheet = excel_workbook.active
+    for page in pdf.pages:
+        table = page.extract_table()
+        if table:
+            for row in table:
+                excel_data.append(row)
 
-    for page_num in range(len(pdf_reader.pages)):
-        page = pdf_reader.pages[page_num]
-        page_text = page.extract_text()
-        page_lines = page_text.split('\n')
+    df = pd.DataFrame(excel_data)
 
-        for row_num, line in enumerate(page_lines, start=1):
-            columns = line.split('\t')
-            for col_num, cell in enumerate(columns, start=1):
-                excel_sheet.cell(row=row_num, column=col_num, value=cell)
+    df.to_excel(xlsx_file, index=False, header=False)
 
-    excel_workbook.save(xlsx_file)
     print(f'PDF успешно сконвертирован в Excel: {xlsx_file}')
 
-    pdf_file.close()
-  
 
 def pdf_to_pptx(pdf_file, pptx_file, page):
     pass
