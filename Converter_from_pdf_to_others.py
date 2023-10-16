@@ -138,30 +138,34 @@ def pdf_to_images(pdf_file, image_folder, page_range=None):
         
 
 def convert_file(pdf_file, output_file, choice_type, page, doc_type):
-    if choice_type == "1":
+    if choice_type == 1:
         pdf_to_docx(pdf_file, output_file + "." + doc_type, page)
-    elif choice_type == "2":
+    elif choice_type == 2:
         pdf_to_xlsx(pdf_file, output_file, page)
-    elif choice_type == "3":
+    elif choice_type == 3:
         pdf_to_pptx(pdf_file, output_file, page)
-    elif choice_type == "4":
+    elif choice_type == 4:
         pdf_to_images(pdf_file, output_file, page)
              
 
-def choice_page(number_of_pages):
+def choice_page():
     start_page = None
     end_page = None
     page = None
-    if number_of_pages == "1":
-        start_page = str(int(input("Start: ")) - 1)
-        end_page = str(input("End: "))
-        page = [start_page, end_page]
-        return page
-    elif number_of_pages == "2":
-        page = [str(int(input("Page: ")) - 1)] 
-        return page
-    else:
-        return page
+    while True:
+        number_of_pages = input("Choose an option:\n1. Page range\n2. Only one page\n3. All file\n")      
+        if number_of_pages == "1":
+            start_page = str(int(input("Start: ")) - 1)
+            end_page = str(input("End: "))
+            page = [start_page, end_page]
+            return page
+        elif number_of_pages == "2":
+            page = [str(int(input("Page: ")) - 1)] 
+            return page
+        elif number_of_pages == "3":
+            return page
+        else:
+             print("Select one of the numbers indicated")
     
 
 def output_file_preparation(pdf_file, output_file):
@@ -175,19 +179,38 @@ def output_file_preparation(pdf_file, output_file):
     return output_file
 
 
-def main():
-    pdf_file = input("Enter path and file name: ")
-    choice_type = input("Choose an option:\n1. Convert to DOCX/DOC\n2. Convert to XLSX\n3. Convert to PPTX\n4. Convert to Images\n")
-    doc_type = None
-    if choice_type == "1":
-        doc_type = input("Enter doc/docx: ")
-    number_of_pages = input("Choose an option:\n1. Page range\n2. Only one page\n3. All file\n")
-    
-    page = choice_page(number_of_pages)
+def choice_type_convert():
+    while True:
+        choice_type = int(input("Choose an option:\n1. Convert to DOCX/DOC\n2. Convert to XLSX\n3. Convert to PPTX\n4. Convert to Images\n"))
+        doc_type = None
+        if choice_type == 1:
+            doc_type = input("Enter doc/docx: ")
+            return choice_type, doc_type                 
+        elif choice_type < 1 or choice_type >= 4:
+            print("Select one of the numbers indicated")
+        else:
+            return choice_type, doc_type      
+
+
+def main():  
+    attempts = 1
+    while attempts <= 3:
+        pdf_file = input("Enter path and file name: ")
+        if os.path.exists(pdf_file) == False and attempts < 3:
+            print("The specified path is invalid or the file does not exist, please try again")
+            attempts += 1
+        elif os.path.exists(pdf_file) == False and attempts >= 3:
+            print("Exceeded maximum number of attempts. Exiting.")
+            return 
+        else:
+            break
+
+    choice_type, doc_type = choice_type_convert()
+        
+    page = choice_page()
         
     output_file = input("Enter the path where you want to save the file: ") 
     output_file = output_file_preparation(pdf_file, output_file)
-    
     convert_file(pdf_file, output_file, choice_type, page, doc_type)
     
 
