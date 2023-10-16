@@ -18,23 +18,41 @@ def pdf_to_docx(pdf_file, output_file, page=None, start_page=0, end_page=None):
         cv.close()
 
 
-def pdf_to_xlsx(pdf_file, xlsx_file, page="all"):
+def pdf_to_xlsx(pdf_file, xlsx_file, page_range=None):
     xlsx_file += ".xlsx"
-    pdf = pdfplumber.open(pdf_file)
-    excel_data = []
+    if page_range is not None:
+        page_range = [int(page) + 1 for page in page_range]
+    with pdfplumber.open(pdf_file) as pdf:
+        all_data = []
+        for page_number, page in enumerate(pdf.pages):
+            if page_range is not None and page_number + 1 not in page_range:
+                continue
+            tables = page.extract_tables()
+            for table_number, table in enumerate(tables):
+                if not table:
+                    continue
+                
+                df = pd.DataFrame(table)
+                
+                if df.empty:
+                    continue
 
-    tables = [page.extract_table() for page in pdf.pages]
+                all_data.append(df)
 
-    for table in tables:
-        if table:
-            excel_data.extend(table)
-            excel_data.append([])
+        if page_range is None and all_data:
+            with pd.ExcelWriter(xlsx_file, engine='xlsxwriter') as writer:
+                for i, df in enumerate(all_data):
+                    df.to_excel(writer, sheet_name=f"Table_{i+1}", index=False, header=False)
+            print(f'Done: {xlsx_file}')
+            
+        elif page_range is not None and all_data:
+            with pd.ExcelWriter(xlsx_file, engine='xlsxwriter') as writer:
+                for i, df in enumerate(all_data):
+                    df.to_excel(writer, sheet_name=f"Page_{page_range[i]}_Table_{i+1}", index=False, header=False)
+            print(f'Done: {xlsx_file}')
+        else:
+            print("No data found.")
 
-    df = pd.DataFrame(excel_data)
-
-    df.to_excel(xlsx_file, index=False, header=False)
-
-    print(f'Done: {xlsx_file}')
     
 
 def pdf_to_pptx(pdf_file, pptx_file, page):
@@ -52,6 +70,7 @@ def convert_file(pdf_file, output_file, choice_type, page, start_page, end_page,
         pdf_to_docx(pdf_file, output_file + "." + doc_type, page, start_page, end_page)
     elif choice_type == "2":
         pdf_to_xlsx(pdf_file, output_file, page)
+        print(page)
              
 
 def choice_page(number_of_pages):
