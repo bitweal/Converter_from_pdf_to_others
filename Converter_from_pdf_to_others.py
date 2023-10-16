@@ -1,12 +1,12 @@
 ﻿from pdf2docx import Converter
 import pdfplumber
 import pandas as pd
-from pdf2image import convert_from_path
 import pdfplumber
 from pptx import Presentation
 from pptx.util import Inches
 import os
 import fitz
+from PIL import Image
 
 
 def pdf_to_docx(pdf_file, output_file, page=None, start_page=0, end_page=None):
@@ -95,10 +95,25 @@ def pdf_to_pptx(pdf_file, pptx_file, page_range=None):
     print(f'Done: {pptx_file}')
 
 
-def pdf_to_images(pdf_file, image_dir, start_page, end_page):
-    images = convert_from_path(pdf_file, first_page=start_page, last_page=end_page)
-    for i, image in enumerate(images):
-        image.save(f"{image_dir}/page_{i+1}.jpg", "JPEG")
+def pdf_to_images(pdf_file, image_folder, page_range=None):
+    image_folder += ".png"
+    if not os.path.exists(image_folder):
+        os.mkdir(image_folder)
+
+    with fitz.open(pdf_file) as pdf_document:
+        for page_number, pdf_page in enumerate(pdf_document):
+            if page_range is not None and page_number + 1 not in page_range:
+                continue
+
+            img = pdf_page.get_pixmap(matrix=fitz.Matrix(300/72, 300/72))
+
+            img_bytes = img.samples
+            
+            image = Image.frombytes("RGB", [img.width, img.height], img_bytes)
+            image_file = os.path.join(image_folder, f"page_{page_number + 1}.png")
+            image.save(image_file, "PNG")
+
+    print(f'Images saved to: {image_folder}')
         
 
 def convert_file(pdf_file, output_file, choice_type, page, start_page, end_page, doc_type):
@@ -108,6 +123,8 @@ def convert_file(pdf_file, output_file, choice_type, page, start_page, end_page,
         pdf_to_xlsx(pdf_file, output_file, page)
     elif choice_type == "3":
         pdf_to_pptx(pdf_file, output_file, page)
+    elif choice_type == "4":
+        pdf_to_images(pdf_file, output_file, page)
         print(page)
              
 
