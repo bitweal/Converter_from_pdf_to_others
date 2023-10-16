@@ -118,10 +118,9 @@ def pdf_to_images(pdf_file, image_folder, page_range=None):
         num_pages = len(pdf_document)
 
         if page_range is None:
-            page_range = range(1, num_pages)
+            page_range = range(0, num_pages)
         elif len(page_range) == 2:
             page_range = range(int(page_range[0]), int(page_range[1]))
-          
 
         for page_number in page_range:
             pdf_page = pdf_document[int(page_number)]
@@ -130,8 +129,8 @@ def pdf_to_images(pdf_file, image_folder, page_range=None):
             img_bytes = img.samples
 
             image = Image.frombytes("RGB", [img.width, img.height], img_bytes)
-            image_file = os.path.join(image_folder, f"page_{int(page_number)+1}.png")
-            image.save(image_file, "PNG")
+            image_file = os.path.join(image_folder, f"page_{int(page_number)+1}.jpg")
+            image.save(image_file, "JPEG")
 
     print(f'Done: {image_folder}')
         
@@ -185,7 +184,7 @@ def choice_type_convert():
         if choice_type == 1:
             doc_type = input("Enter doc/docx: ")
             return choice_type, doc_type                 
-        elif choice_type < 1 or choice_type >= 4:
+        elif choice_type < 1 or choice_type > 4:
             print("Select one of the numbers indicated")
         else:
             return choice_type, doc_type      
