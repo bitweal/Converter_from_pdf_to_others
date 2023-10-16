@@ -1,7 +1,6 @@
 ﻿from pdf2docx import Converter
 import pdfplumber
 import pandas as pd
-import pdfplumber
 from pptx import Presentation
 from pptx.util import Inches
 import os
@@ -216,3 +215,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
