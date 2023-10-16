@@ -1,8 +1,12 @@
 ﻿from pdf2docx import Converter
-from pptx import Presentation
-from pdf2image import convert_from_path
 import pdfplumber
 import pandas as pd
+from pdf2image import convert_from_path
+import pdfplumber
+from pptx import Presentation
+from pptx.util import Inches
+import os
+import fitz
 
 
 def pdf_to_docx(pdf_file, output_file, page=None, start_page=0, end_page=None):
@@ -55,8 +59,40 @@ def pdf_to_xlsx(pdf_file, xlsx_file, page_range=None):
 
     
 
-def pdf_to_pptx(pdf_file, pptx_file, page):
-    pass
+def pdf_to_pptx(pdf_file, pptx_file, page_range=None):
+    pptx_file += ".pptx"
+    if page_range is not None:
+        page_range = [int(page) + 1 for page in page_range]
+        
+    prs = Presentation()
+
+    with fitz.open(pdf_file) as pdf_document:
+        for page_number, pdf_page in enumerate(pdf_document):
+            if page_range is not None and page_number + 1 not in page_range:
+                continue
+
+            pdf_page_rect = pdf_page.rect
+            pdf_page_width = pdf_page_rect[2] - pdf_page_rect[0]
+            pdf_page_height = pdf_page_rect[3] - pdf_page_rect[1]
+
+            slide = prs.slides.add_slide(prs.slide_layouts[6]) 
+            slide_width = Inches(pdf_page_width / 72.0)
+            slide_height = Inches(pdf_page_height / 72.0)
+            prs.slide_width = slide_width
+            prs.slide_height = slide_height
+
+            img = pdf_page.get_pixmap(matrix=fitz.Matrix(300/72, 300/72))
+            img_path = f"temp_image.png"
+            img.save(img_path)
+
+            left = Inches(0)
+            top = Inches(0)
+            slide.shapes.add_picture(img_path, left, top, width=slide_width, height=slide_height)
+
+            os.remove(img_path)
+
+    prs.save(pptx_file)
+    print(f'Done: {pptx_file}')
 
 
 def pdf_to_images(pdf_file, image_dir, start_page, end_page):
@@ -70,6 +106,8 @@ def convert_file(pdf_file, output_file, choice_type, page, start_page, end_page,
         pdf_to_docx(pdf_file, output_file + "." + doc_type, page, start_page, end_page)
     elif choice_type == "2":
         pdf_to_xlsx(pdf_file, output_file, page)
+    elif choice_type == "3":
+        pdf_to_pptx(pdf_file, output_file, page)
         print(page)
              
 
