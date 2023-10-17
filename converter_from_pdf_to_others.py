@@ -150,7 +150,7 @@ def main():
     text_input = input().split()  
     pdf_file = text_input[0]
     output_file = text_input[1]  
-    if len(text_input) == 2:
+    if text_input[2] == "all":
         page = None
     elif len(text_input[2].split("-")) == 1:
          page = [str(int(text_input[2])-1)]
