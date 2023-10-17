@@ -31,14 +31,15 @@ def pdf_to_xlsx(pdf_file, xlsx_file, page_range):
     if page_range is None:   
         pass
     elif len(page_range) == 2:
-        page_range = [int(page) + 1 for page in page_range]
+        page_range = [int(page) for page in page_range]
         page_range = list(range(page_range[0], page_range[1])) 
     else:          
-        page_range = [int(page) + 1 for page in page_range]
+        page_range = [int(page) for page in page_range]
+        print(page_range)
     with pdfplumber.open(pdf_file) as pdf:
         all_data = []
         for page_number, page in enumerate(pdf.pages):
-            if page_range is not None and page_number + 1 not in page_range:
+            if page_range is not None and page_number not in page_range:
                 continue
             tables = page.extract_tables()
             for table_number, table in enumerate(tables):
