@@ -140,7 +140,7 @@ def convert_file(pdf_file, output_file, page):
         pdf_to_docx(pdf_file, output_file, page)
     elif file_extension == "xlsx":
         pdf_to_xlsx(pdf_file, output_file, page)
-    elif file_extension == "ppt":
+    elif file_extension == "pptx":
         pdf_to_pptx(pdf_file, output_file, page)
     elif file_extension == "jpg":
         pdf_to_images(pdf_file, output_file, page)
