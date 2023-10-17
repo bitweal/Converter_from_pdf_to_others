@@ -28,14 +28,13 @@ def pdf_to_docx(pdf_file, output_file, page):
 
 
 def pdf_to_xlsx(pdf_file, xlsx_file, page_range):
-    xlsx_file += ".xlsx"
     if page_range is None:   
         pass
     elif len(page_range) == 2:
-        page_range = [int(page) for page in page_range]
+        page_range = [int(page) + 1 for page in page_range]
         page_range = list(range(page_range[0], page_range[1])) 
     else:          
-        page_range = [int(page) for page in page_range]
+        page_range = [int(page) + 1 for page in page_range]
     with pdfplumber.open(pdf_file) as pdf:
         all_data = []
         for page_number, page in enumerate(pdf.pages):
@@ -62,19 +61,18 @@ def pdf_to_xlsx(pdf_file, xlsx_file, page_range):
         elif page_range is not None and all_data:
             with pd.ExcelWriter(xlsx_file, engine='xlsxwriter') as writer:
                 for i, df in enumerate(all_data):
-                    df.to_excel(writer, sheet_name=f"Page_{page_range[i]}_Table_{i+1}", index=False, header=False)
+                    df.to_excel(writer, sheet_name=f"Table_{i+1}", index=False, header=False)
             print(f'Done: {xlsx_file}')
         else:
             print("No data found.")
   
 
 def pdf_to_pptx(pdf_file, pptx_file, page_range):
-    pptx_file += ".pptx"
     if page_range is None:   
         pass
     elif len(page_range) == 2:
-        page_range = [int(page) for page in page_range]
-        page_range = list(range(page_range[0], page_range[1] + 1)) 
+        page_range = [int(page) + 1 for page in page_range]
+        page_range = list(range(page_range[0], page_range[1])) 
     else:          
         page_range = [int(page) + 1 for page in page_range]
         
@@ -134,81 +132,33 @@ def pdf_to_images(pdf_file, image_folder, page_range=None):
     print(f'Done: {image_folder}')
         
 
-def convert_file(pdf_file, output_file, choice_type, page, doc_type):
-    if choice_type == 1:
-        pdf_to_docx(pdf_file, output_file + "." + doc_type, page)
-    elif choice_type == 2:
+def convert_file(pdf_file, output_file, page):
+    file_extension = output_file.split(".")[-1]
+    print(file_extension)
+    
+    if file_extension == "doc" or file_extension == "docx":
+        pdf_to_docx(pdf_file, output_file, page)
+    elif file_extension == "xlsx":
         pdf_to_xlsx(pdf_file, output_file, page)
-    elif choice_type == 3:
+    elif file_extension == "ppt":
         pdf_to_pptx(pdf_file, output_file, page)
-    elif choice_type == 4:
+    elif file_extension == "jpg":
         pdf_to_images(pdf_file, output_file, page)
              
 
-def choice_page():
-    start_page = None
-    end_page = None
-    page = None
-    while True:
-        number_of_pages = input("Choose an option:\n1. Page range\n2. Only one page\n3. All file\n")      
-        if number_of_pages == "1":
-            start_page = str(int(input("Start: ")) - 1)
-            end_page = str(input("End: "))
-            page = [start_page, end_page]
-            return page
-        elif number_of_pages == "2":
-            page = [str(int(input("Page: ")) - 1)] 
-            return page
-        elif number_of_pages == "3":
-            return page
-        else:
-             print("Select one of the numbers indicated")
-    
-
-def output_file_preparation(pdf_file, output_file):
-    parts = pdf_file.split('/') 
-    file_name = parts[-1].split(".")
-    if output_file == "":
-        output_file += file_name[0]
-    else:
-        output_file += "/" + file_name[0]
-        
-    return output_file
-
-
-def choice_type_convert():
-    while True:
-        choice_type = int(input("Choose an option:\n1. Convert to DOCX/DOC\n2. Convert to XLSX\n3. Convert to PPTX\n4. Convert to Images\n"))
-        doc_type = None
-        if choice_type == 1:
-            doc_type = input("Enter doc/docx: ")
-            return choice_type, doc_type                 
-        elif choice_type < 1 or choice_type > 4:
-            print("Select one of the numbers indicated")
-        else:
-            return choice_type, doc_type      
-
-
 def main():  
-    attempts = 1
-    while attempts <= 3:
-        pdf_file = input("Enter path and file name: ")
-        if os.path.exists(pdf_file) == False and attempts < 3:
-            print("The specified path is invalid or the file does not exist, please try again")
-            attempts += 1
-        elif os.path.exists(pdf_file) == False and attempts >= 3:
-            print("Exceeded maximum number of attempts. Exiting.")
-            return 
-        else:
-            break
-
-    choice_type, doc_type = choice_type_convert()
-        
-    page = choice_page()
-        
-    output_file = input("Enter the path where you want to save the file: ") 
-    output_file = output_file_preparation(pdf_file, output_file)
-    convert_file(pdf_file, output_file, choice_type, page, doc_type)
+    text_input = input().split()  
+    pdf_file = text_input[0]
+    output_file = text_input[1]  
+    if len(text_input) == 2:
+        page = None
+    elif len(text_input[2].split("-")) == 1:
+         page = [str(int(text_input[2])-1)]
+    elif len(text_input[2].split("-")) == 2:
+        page = text_input[2].split("-")
+        page[0] = str(int(page[0])-1)
+    print(page)
+    convert_file(pdf_file, output_file, page)
     
 
 if __name__ == "__main__":
