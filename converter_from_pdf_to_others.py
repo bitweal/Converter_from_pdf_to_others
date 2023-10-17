@@ -134,7 +134,6 @@ def pdf_to_images(pdf_file, image_folder, page_range=None):
 
 def convert_file(pdf_file, output_file, page):
     file_extension = output_file.split(".")[-1]
-    print(file_extension)
     
     if file_extension == "doc" or file_extension == "docx":
         pdf_to_docx(pdf_file, output_file, page)
@@ -157,7 +156,6 @@ def main():
     elif len(text_input[2].split("-")) == 2:
         page = text_input[2].split("-")
         page[0] = str(int(page[0])-1)
-    print(page)
     convert_file(pdf_file, output_file, page)
     
 
