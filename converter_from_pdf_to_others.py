@@ -146,16 +146,13 @@ def convert_file(pdf_file, output_file, page):
         pdf_to_images(pdf_file, output_file, page)
              
 
-def main():  
-    text_input = input().split()  
-    pdf_file = text_input[0]
-    output_file = text_input[1]  
-    if text_input[2] == "all":
+def main(pdf_file, output_file, pages):  
+    if pages == "all":
         page = None
-    elif len(text_input[2].split("-")) == 1:
-         page = [str(int(text_input[2])-1)]
-    elif len(text_input[2].split("-")) == 2:
-        page = text_input[2].split("-")
+    elif len(pages.split("-")) == 1:
+         page = [str(int(pages)-1)]
+    elif len(pages.split("-")) == 2:
+        page = pages.split("-")
         page[0] = str(int(page[0])-1)
     convert_file(pdf_file, output_file, page)
     
