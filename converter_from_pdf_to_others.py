@@ -6,6 +6,7 @@ from pptx.util import Inches
 import os
 import fitz
 from PIL import Image
+import sys
 
 
 def pdf_to_docx(pdf_file, output_file, page):
@@ -146,7 +147,10 @@ def convert_file(pdf_file, output_file, page):
         pdf_to_images(pdf_file, output_file, page)
              
 
-def main(pdf_file, output_file, pages):  
+def main():  
+    pdf_file = sys.argv[1]
+    output_file = sys.argv[2]
+    pages = sys.argv[3]
     if pages == "all":
         page = None
     elif len(pages.split("-")) == 1:
