@@ -12,19 +12,15 @@ import sys
 def pdf_to_docx(pdf_file, output_file, page):
     cv = Converter(pdf_file)
     try:
-        cv.start_conversion(output_file)
-        if page is None:
-            start_page, end_page = 0, cv.page_count
+        if page is None:   
+            start_page, end_page = 0, None
+            cv.convert(output_file, start=start_page, end=end_page)
         elif len(page) == 2:
             start_page, end_page = page[0], page[1]
-        else:
-            start_page, end_page = page[0], page[0] + 1
-
-        for page_num in range(start_page, end_page):
-            page = cv.get_page(page_num)
-            cv.add_page(page)
-
-        cv.finish_conversion()
+            cv.convert(output_file, start=start_page, end=end_page)
+        else:          
+            cv.convert(output_file, pages=page)    
+            
         print(f'Done: {output_file}')
     except Exception as e:
         print(f'An error occurred: {str(e)}')
